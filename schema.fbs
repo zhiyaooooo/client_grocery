@@ -1,0 +1,131 @@
+namespace OgTeam1PA1;
+
+//order message
+
+table VeggiesTable {
+  tomato: float;
+  cucumber: float;
+  potato: float;
+  carrot: float;
+}
+
+table CansTable {
+  coke: int;
+  beer: int;
+  pepsi: int;
+}
+
+table BottlesTable {
+  sprite: int;
+  gingerale: int;
+  fanta: int;
+}
+
+table DrinksTable {
+  cans: CansTable;
+  bottles: BottlesTable;
+}
+
+enum MilkType: int {
+  onePercent = 0,
+  twoPercent = 1,
+  fatFree = 2,
+  whole = 3,
+  almond = 4,
+  cashew = 5,
+  oat = 6
+}
+
+table MilkTable {
+  type: MilkType;
+  quantity: float;
+}
+
+enum BreadType: int {
+  wholeWheat = 0,
+  pumpernickel = 1,
+  rye = 2
+}
+
+table BreadTable {
+  type: BreadType;
+  quantity: float;
+}
+
+enum MeatType: int {
+  mutton = 0,
+  beef = 1,
+  chicken = 2,
+  pork = 3
+}
+
+table MeatTable {
+  type: MeatType;
+  quantity: float;
+}
+
+table OrderMessageTable {
+  veggies: VeggiesTable;
+  drinks: DrinksTable;
+  milk: [MilkTable];
+  bread: [BreadTable];
+  meat: [MeatTable];
+}
+
+
+
+
+//health message
+
+enum DispenserStatus: int {
+  Optimal = 0,
+  Partial = 1,
+  Blockage = 2
+}
+
+enum GoodBadStatus: int {
+  Good = 0,
+  Bad = 1
+}
+
+enum DoorStatus: int {
+  Open = 0,
+  Close = 1
+}
+
+table HealthMessageTable {
+  dispenser: DispenserStatus;
+  icemaker: int;
+  lightbulb: GoodBadStatus;
+  fridge_temp: int;
+  freezer_temp: int; // could be negative
+  sensor_status: GoodBadStatus;
+  door_status: DoorStatus;
+}
+
+
+
+
+//response message
+
+enum ReplyCode: int {
+  OK = 0,
+  BAD_REQUEST = 1
+}
+
+table ResponseMessageTable {
+  code: ReplyCode;
+  contents: string;
+}
+
+
+
+//wrap up three types of message
+
+table ThreeTypeMessage{
+  order: OrderMessageTable;
+  health: HealthMessageTable;
+  response: ResponseMessageTable;
+}
+
+root_type ThreeTypeMessage;
