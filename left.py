@@ -143,7 +143,7 @@ def run():
     
     info (net['r1'].cmd("ip route add 10.100.0.0/16 via 10.50.0.3 dev r1-eth13"))
     info (net['r2'].cmd("ip route add 10.100.0.0/16 via 10.50.0.3 dev r2-eth23"))
-    info (net['r3'].cmd("ip route add 10.100.0.0/16 via 192.168.100.2 dev vxlan0"))
+    info (net['r3'].cmd("ip route add 10.100.0.0/16 via 10.3.0.1 dev r3-eth1"))
 
     net.start ()  # this method must be invoked to start the mininet
     CLI (net)   # this gives us mininet prompt
