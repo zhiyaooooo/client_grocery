@@ -30,6 +30,7 @@
 from mininet.topo import Topo
 from mininet.net import Mininet
 from mininet.node import Node
+from mininet.nodelib import NAT
 from mininet.log import setLogLevel, info
 from mininet.cli import CLI
 
@@ -61,6 +62,8 @@ class NetworkTopo (Topo):
         s1 = self.addSwitch ('s1')
         s2 = self.addSwitch ('s2')
         s3 = self.addSwitch ('s3')
+        
+        nat = self.addNode('nat', cls=NAT, ip='10.3.0.100/24', inNamespace=False)
         # Add host-switch links in the same subnet.  We need this because now
         # we want to connect our routers to their respective switches. We must also
         # name the interfaces, here r1-eth1 and so on, and make sure to assign an
@@ -78,6 +81,7 @@ class NetworkTopo (Topo):
                      r3,
                      intfName2='r3-eth1',
                      params2={'ip': '10.3.0.1/24'})
+        self.addLink(nat, s3)
         #"""
         # Add router-router link in a new subnet for the router-router connection
         self.addLink(r1,
@@ -139,8 +143,7 @@ def run():
     info (net['r3'].cmd("ip route add 10.1.0.0/24 via 10.50.0.1 dev r3-eth13"))
     info (net['r2'].cmd("ip route add 10.3.0.0/24 via 10.50.0.3 dev r2-eth23"))
     info (net['r3'].cmd("ip route add 10.2.0.0/24 via 10.50.0.2 dev r3-eth23"))
-    
-    
+        
     info (net['r1'].cmd("ip route add 10.100.0.0/16 via 10.50.0.3 dev r1-eth13"))
     info (net['r2'].cmd("ip route add 10.100.0.0/16 via 10.50.0.3 dev r2-eth23"))
     info (net['r3'].cmd("ip route add 10.100.0.0/16 via 10.3.0.1 dev r3-eth1"))
