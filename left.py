@@ -61,7 +61,7 @@ class NetworkTopo (Topo):
         # Add 2 switches
         s1 = self.addSwitch ('s1')
         s2 = self.addSwitch ('s2')
-        s3 = self.addSwitch ('s3')
+        #s3 = self.addSwitch ('s3')
         
         nat = self.addNode('nat', cls=NAT, ip='10.3.0.100/24', inNamespace=False)
         # Add host-switch links in the same subnet.  We need this because now
@@ -76,13 +76,14 @@ class NetworkTopo (Topo):
                      r2,
                      intfName2='r2-eth1',
                      params2={'ip': '10.2.0.1/24'})
-        #"""
+        """
         self.addLink (s3,
                      r3,
                      intfName2='r3-eth1',
                      params2={'ip': '10.3.0.1/24'})
-        self.addLink(nat, s3)
-        #"""
+        """
+        self.addLink(nat, r3, intfName2='nat-eth0', params2={'ip': '10.3.0.100/24'})
+
         # Add router-router link in a new subnet for the router-router connection
         self.addLink(r1,
                      r2,
