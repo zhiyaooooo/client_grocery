@@ -82,7 +82,7 @@ class NetworkTopo (Topo):
                      intfName2='r3-eth1',
                      params2={'ip': '10.3.0.1/24'})
         """
-        self.addLink(nat, r3, intfName2='nat-eth0', params2={'ip': '10.3.0.100/24'})
+        self.addLink(nat, r3, intfName1='nat-eth0', params1={'ip': '10.3.0.100/24'}, intfName2='r3-eth1', params2={'ip': '10.3.0.1/24'})
 
         # Add router-router link in a new subnet for the router-router connection
         self.addLink(r1,
