@@ -63,7 +63,7 @@ class NetworkTopo (Topo):
         s2 = self.addSwitch ('s2')
         #s3 = self.addSwitch ('s3')
         
-        nat = self.addNAT ('nat0', connect=True, ip='10.3.0.100/24', inNamespace=False)
+        nat = self.Mininet.addNAT ('nat0', connect=True, ip='10.3.0.100/24', inNamespace=False)
         #nat = self.addNode('nat', cls=NAT, ip='10.3.0.100/24', inNamespace=False)
         
         # Add host-switch links in the same subnet.  We need this because now
