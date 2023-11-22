@@ -16,14 +16,14 @@
 #
 # Here is a text base diagram of what they are trying to accomplish
 
-# host(d1) -- switch (s1) -- router (r1) --- router (r2) -- switch (s2) -- host (d2)
-# d1 will have IP address: 10.1.0.100
-# d2 will have IP address: 10.2.0.100  (note it is in a diff n/w than d1)
+# host(h1) -- switch (s1) -- router (r1) --- router (r2) -- switch (s2) -- host (h2)
+# h1 will have IP address: 10.1.0.100
+# h2 will have IP address: 10.2.0.100  (note it is in a diff n/w than h1)
 # Note that switches are bridges
 # r1 will have IP address: 10.1.0.1 facing its LAN and 10.50.0.1 facing r2
 # r2 will have IP address: 10.2.0.1 facing its LAN and 10.50.0.2 facing r1
 #
-# Our aim is for d1 and d2 to talk to each other.
+# Our aim is for h1 and h2 to talk to each other.
 
 # Many of the packages that need to be imported. See
 # https://mininet.org/api/index.html
@@ -63,66 +63,38 @@ class NetworkTopo (Topo):
         s2 = self.addSwitch ('s2')
         s3 = self.addSwitch ('s3')
         
+        h1 = self.addHost (name='h1', ip='10.1.0.100/24', defaultRoute='via 10.1.0.1')
+        h2 = self.addHost (name='h2', ip='10.2.0.100/24', defaultRoute='via 10.2.0.1')
+        h3 = self.addHost (name='h3', ip='10.3.0.100/24', defaultRoute='via 10.3.0.1')
+        
+        self.addLink (h1, s1)
+        self.addLink (h2, s2)
+        self.addLink (h3, s3)
         # Add host-switch links in the same subnet.  We need this because now
         # we want to connect our routers to their respective switches. We must also
         # name the interfaces, here r1-eth1 and so on, and make sure to assign an
         # IP address facing the LAN.
-        self.addLink (s1,
-                     r1,
-                     intfName2='r1-eth1',
-                     params2={'ip': '10.1.0.1/24'})
-        self.addLink (s2,
-                     r2,
-                     intfName2='r2-eth1',
-                     params2={'ip': '10.2.0.1/24'})
-        #"""
-        self.addLink (s3,
-                     r3,
-                     intfName2='r3-eth1',
-                     params2={'ip': '10.3.0.1/24'})
+        self.addLink (s1, r1, intfName2='r1-eth1', params2={'ip': '10.1.0.1/24'})
+        self.addLink (s2, r2, intfName2='r2-eth1', params2={'ip': '10.2.0.1/24'})
+        self.addLink (s3, r3, intfName2='r3-eth1', params2={'ip': '10.3.0.1/24'})
         #"""
         #self.addLink(nat, r3, intfName1='nat-eth0', params1={'ip': '10.3.0.100/24'}, intfName2='r3-eth1', params2={'ip': '10.3.0.1/24'})
 
         # Add router-router link in a new subnet for the router-router connection
-        self.addLink(r1,
-                     r2,
-                     intfName1='r1-eth12',
-                     intfName2='r2-eth12',
-                     params1={'ip': '10.50.0.1/24'},
-                     params2={'ip': '10.50.0.2/24'})
+        self.addLink(r1, r2, intfName1='r1-eth12', intfName2='r2-eth12',
+                     params1={'ip': '10.12.0.1/24'}, params2={'ip': '10.12.0.2/24'})
         #"""
-        self.addLink(r1,
-                     r3,
-                     intfName1='r1-eth13',
-                     intfName2='r3-eth13',
-                     params1={'ip': '10.50.0.1/24'},
-                     params2={'ip': '10.50.0.3/24'})
+        self.addLink(r1, r3, intfName1='r1-eth13', intfName2='r3-eth13',
+                     params1={'ip': '10.13.0.1/24'}, params2={'ip': '10.13.0.3/24'})
                      
-        self.addLink(r2,
-                     r3,
-                     intfName1='r2-eth23',
-                     intfName2='r3-eth23',
-                     params1={'ip': '10.50.0.2/24'},
-                     params2={'ip': '10.50.0.3/24'})
+        self.addLink(r2, r3, intfName1='r2-eth23', intfName2='r3-eth23',
+                     params1={'ip': '10.23.0.2/24'}, params2={'ip': '10.23.0.3/24'})
         #"""        
         # Adding hosts specifying the default route
-        d1 = self.addHost (name='d1',
-                          ip='10.1.0.100/24',
-                          defaultRoute='via 10.1.0.1')
-        d2 = self.addHost (name='d2',
-                          ip='10.2.0.100/24',
-                          defaultRoute='via 10.2.0.1')
-        #"""
-        d3 = self.addHost (name='d3',
-                          ip='10.3.0.100/24',
-                          defaultRoute='via 10.3.0.1')
+        
         #"""
         # Add host-switch links
-        self.addLink (d1, s1)
-        self.addLink (d2, s2)
-        #"""
-        self.addLink (d3, s3)
-        #"""
+        
 
 
 def run():
@@ -132,29 +104,41 @@ def run():
     # Then create the network object from this topology
     net = Mininet (topo=topo)
     
-    
+    #"""
     net.addNAT(name='nat1', ip='10.0.42.1').configDefault()
     net.addLink(net['r3'], net['nat1'],
                 intfName1='r3-nat1', params1={'ip':'10.0.41.1/24'},
                 intfName2='nat1-r3', params2={'ip':'10.0.41.2/24'})
     info(net['nat1'].cmd('ip route add 10.1.0.0/24 via 10.0.41.1 dev nat1-r3'))
+    info(net['nat1'].cmd('ip route add 10.2.0.0/24 via 10.0.41.1 dev nat1-r3'))
+    info(net['nat1'].cmd('ip route add 10.3.0.0/24 via 10.0.41.1 dev nat1-r3'))
+    
     info(net['r3'].cmd('ip route add 10.0.42.0/24 via 10.0.41.2 dev r3-nat1'))
     info(net['r3'].cmd('ip route add default via 10.0.41.2 dev r3-nat1'))
+    
     info(net['nat1'].cmd('ip route add default via 192.168.100.2 dev vxlan0'))
     info(net['nat1'].cmd('iptables -D FORWARD -i nat1-eth0 -d 10.0.0.0/8 -j DROP'))
-
+    """
+    """
+    
     # Note how the "ip route add" command is invoked on each router so that
     # they can route to each other
     
     # Add routing for reaching networks that aren't directly connected
     # both directions
     #"""
-    info (net['r1'].cmd("ip route add 10.2.0.0/24 via 10.50.0.2 dev r1-eth12"))
-    info (net['r2'].cmd("ip route add 10.1.0.0/24 via 10.50.0.1 dev r2-eth12"))
-    info (net['r1'].cmd("ip route add 10.3.0.0/24 via 10.50.0.3 dev r1-eth13"))
-    info (net['r3'].cmd("ip route add 10.1.0.0/24 via 10.50.0.1 dev r3-eth13"))
-    info (net['r2'].cmd("ip route add 10.3.0.0/24 via 10.50.0.3 dev r2-eth23"))
-    info (net['r3'].cmd("ip route add 10.2.0.0/24 via 10.50.0.2 dev r3-eth23"))
+    info(net['h1'].cmd('ip route add default via 10.1.0.1'))
+    info(net['h2'].cmd('ip route add default via 10.2.0.1'))
+    info(net['h3'].cmd('ip route add default via 10.3.0.1'))
+    
+    info (net['r1'].cmd("ip route add default via 10.12.0.2 dev r1-eth12"))
+    info (net['r1'].cmd("ip route add 10.2.0.0/24 via 10.12.0.2 dev r1-eth12"))
+    info (net['r2'].cmd("ip route add default via 10.12.0.1 dev r2-eth12"))
+    info (net['r2'].cmd("ip route add 10.1.0.0/24 via 10.12.0.1 dev r2-eth12"))
+    info (net['r1'].cmd("ip route add 10.3.0.0/24 via 10.13.0.3 dev r1-eth13"))
+    info (net['r3'].cmd("ip route add 10.1.0.0/24 via 10.13.0.1 dev r3-eth13"))
+    info (net['r2'].cmd("ip route add 10.3.0.0/24 via 10.23.0.3 dev r2-eth23"))
+    info (net['r3'].cmd("ip route add 10.2.0.0/24 via 10.23.0.2 dev r3-eth23"))
     #"""
     # one directions
     """
@@ -165,11 +149,11 @@ def run():
     info (net['r3'].cmd("ip route add 10.1.0.0/24 via 10.50.0.1 dev r3-eth13"))
     info (net['r3'].cmd("ip route add 10.2.0.0/24 via 10.50.0.1 dev r3-eth13"))
     """
-    #"""
+    """
     info (net['r1'].cmd("ip route add 10.100.0.0/16 via 10.50.0.3 dev r1-eth13"))
     info (net['r2'].cmd("ip route add 10.100.0.0/16 via 10.50.0.3 dev r2-eth23"))
     info (net['r3'].cmd("ip route add 10.100.0.0/16 via 10.0.41.2 dev r3-nat1"))
-    #"""
+    """
     net.start ()  # this method must be invoked to start the mininet
     CLI (net)   # this gives us mininet prompt
     net.stop ()  # this cleans up the network
