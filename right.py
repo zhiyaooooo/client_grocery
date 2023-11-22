@@ -1,29 +1,6 @@
 #!/usr/bin/python
 
-# Code found on stackoverflow using this search
-#
-# https://stackoverflow.com/questions/46595423/mininet-how-to-create-a-topology-with-two-routers-and-their-respective-hosts
 
-#
-# Fall 2023: Computer Networks
-#
-# Used in explaining the programmatic approach to build topologies
-#
-# Run this program under "sudo" mode
-#
-# I have added comments to explain the code.  Note that this code is
-# probably written with Python2 syntax.
-#
-# Here is a text base diagram of what they are trying to accomplish
-
-# host(d1) -- switch (s1) -- router (r1) --- router (r2) -- switch (s2) -- host (d2)
-# d1 will have IP address: 10.0.0.251
-# d2 will have IP address: 10.1.0.252  (note it is in a diff n/w than d1)
-# Note that switches are bridges
-# r1 will have IP address: 10.0.0.1 facing its LAN and 10.100.0.1 facing r2
-# r2 will have IP address: 10.1.0.1 facing its LAN and 10.100.0.2 facing r1
-#
-# Our aim is for d1 and d2 to talk to each other.
 
 # Many of the packages that need to be imported. See
 # https://mininet.org/api/index.html
@@ -56,13 +33,13 @@ class NetworkTopo(Topo):
         # Topo class adds a Node type. Here we specifically tell it what node
         # type it is by passing the cls=LinuxRouter and passing what IP
         # address we would like on that interface
-        Q = self.addHost('Q', cls=LinuxRouter, ip='192.168.10.1/24')
-        P = self.addHost('P', cls=LinuxRouter, ip='172.16.3.1/24')
-        R = self.addHost('R', cls=LinuxRouter, ip='172.12.0.1/16')
-        S = self.addHost('S', cls=LinuxRouter, ip='192.167.10.1/24')
-        T = self.addHost('T', cls=LinuxRouter, ip='192.167.9.1/24')
-        V = self.addHost('V', cls=LinuxRouter, ip='10.100.0.1/16')
-        U = self.addHost('U', cls=LinuxRouter, ip='10.85.8.1/24')
+        Q = self.addNode('Q', cls=LinuxRouter, ip='192.168.10.1/24')
+        P = self.addNode('P', cls=LinuxRouter, ip='172.16.3.1/24')
+        R = self.addNode('R', cls=LinuxRouter, ip='172.12.0.1/16')
+        S = self.addNode('S', cls=LinuxRouter, ip='192.167.10.1/24')
+        T = self.addNode('T', cls=LinuxRouter, ip='192.167.9.1/24')
+        V = self.addNode('V', cls=LinuxRouter, ip='10.100.0.1/16')
+        U = self.addNode('U', cls=LinuxRouter, ip='10.85.8.1/24')
 
         # Add switches
         sq = self.addSwitch('sq', dpid='0000000000000001')
@@ -236,28 +213,25 @@ class NetworkTopo(Topo):
 def run():
     # first, instantiate our topology. Recall that everything is hardcoded in this
     # topology
-    topo = NetworkTopo()
-
-    # Then create the network object from this topology
-    net = Mininet(topo=topo)
+    net = Mininet(topo=NetworkTopo())
 
     # Note how the "ip route add" command is invoked on each router so that
     # they can route to each other
 
     net.addNAT(name='nat1', ip='10.0.44.1').configDefault()
     net.addLink(net['P'], net['nat1'],
-                intfName1='p-nat-eth', params1={'ip':'10.0.43.2/24'},
-                intfName2='nat-p-eth', params2={'ip':'10.0.43.1/24'})
+                intfName1='p-nat-eth', params1={'ip':'10.0.43.1/24'},
+                intfName2='nat-p-eth', params2={'ip':'10.0.43.2/24'})
     # Add routing for reaching networks that aren't directly connected
-    info(net['nat1'].cmd('ip route add 192.168.10.0/24 via 10.0.43.2 dev nat-p-eth'))
-    info(net['nat1'].cmd('ip route add 172.16.5.0/24 via 10.0.43.2 dev nat-p-eth'))
-    info(net['nat1'].cmd('ip route add 172.16.3.0/24 via 10.0.43.2 dev nat-p-eth'))
-    info(net['nat1'].cmd('ip route add 172.12.0.0/16 via 10.0.43.2 dev nat-p-eth'))
-    info(net['nat1'].cmd('ip route add 10.85.8.0/24 via 10.0.43.2 dev nat-p-eth'))
-    info(net['nat1'].cmd('ip route add 10.85.10.0/24 via 10.0.43.2 dev nat-p-eth'))
-    info(net['nat1'].cmd('ip route add 10.100.0.0/16 via 10.0.43.2 dev nat-p-eth'))
-    info(net['nat1'].cmd('ip route add 192.167.10.0/24 via 10.0.43.2 dev nat-p-eth'))
-    info(net['nat1'].cmd('ip route add 192.167.9.0/24 via 10.0.43.2 dev nat-p-eth'))
+    info(net['nat1'].cmd('ip route add 192.168.10.0/24 via 10.0.43.1 dev nat-p-eth'))
+    info(net['nat1'].cmd('ip route add 172.16.5.0/24 via 10.0.43.1 dev nat-p-eth'))
+    info(net['nat1'].cmd('ip route add 172.16.3.0/24 via 10.0.43.1 dev nat-p-eth'))
+    info(net['nat1'].cmd('ip route add 172.12.0.0/16 via 10.0.43.1 dev nat-p-eth'))
+    info(net['nat1'].cmd('ip route add 10.85.8.0/24 via 10.0.43.1 dev nat-p-eth'))
+    info(net['nat1'].cmd('ip route add 10.85.10.0/24 via 10.0.43.1 dev nat-p-eth'))
+    info(net['nat1'].cmd('ip route add 10.100.0.0/16 via 10.0.43.1 dev nat-p-eth'))
+    info(net['nat1'].cmd('ip route add 192.167.10.0/24 via 10.0.43.1 dev nat-p-eth'))
+    info(net['nat1'].cmd('ip route add 192.167.9.0/24 via 10.0.43.1 dev nat-p-eth'))
 
     info(net['nat1'].cmd('ip route add default via 192.168.100.1 dev vxlan0'))
     info(net['nat1'].cmd('iptables -D FORWARD -i nat1-eth0 -d 10.0.0.0/8 -j DROP'))
@@ -364,7 +338,7 @@ def run():
     # default
     info(net['S'].cmd("ip route add default via 10.101.6.2 dev s-eth2"))
     # P to NAT
-    info(net['S'].cmd("ip route add 10.0.44.0/24 via 10.101.6.2 dev s-eth2"))
+    info(net['S'].cmd("ip route add 10.0.44.0/24 via 10.101.7.2 dev s-eth3"))
 
 
 
